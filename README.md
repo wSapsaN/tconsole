@@ -1,2 +1,3 @@
 # tconsole
-Text editor for linux console
+Simple text editor for Linux console.
+For learning.
