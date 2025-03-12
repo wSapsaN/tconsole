@@ -4,27 +4,30 @@
 #include <ncurses.h>
 #include <memory>
 #include <vector>
-
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 
 class Minivim
 {
 public:
   Minivim(const std::string&);
+  Minivim();
   ~Minivim();
+  
   void run();
 
 protected:
   std::string filename;
 
-  void update();
-  void statusline();
-  void input(int);
-
 private:
-  std::vector<std::string> lines;
+  std::vector<std::string> line;
 
-  int x, y;
-  char mode;
-  std::string status;
+  bool flag_exit = 1;
+  int x = 0, y = 0, my, mx;
+
+  void cursor();
+  void read_file();
+  void outputfile();
 
 };
