@@ -6,6 +6,8 @@ set(SOUR_PATH ${CMAKE_HOME_DIRECTORY}/source)
 
 set(SOURCE ${SOUR_PATH}/main.cpp ${SOUR_PATH}/minivim.cpp)
 
+add_compile_options("-g" "-Wall")
+
 include_directories(${CMAKE_HOME_DIRECTORY}/inc/)
 
 add_executable(app ${SOURCE})
