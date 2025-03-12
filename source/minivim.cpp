@@ -1,12 +1,26 @@
 #include "minivim.hpp"
 
+Minivim::Minivim()
+: filename("") {
+  line.push_back("");
+
+  initscr();
+  noecho();
+  cbreak();
+  keypad(stdscr, true);
+
+}
+
 Minivim::Minivim(const std::string& file)
-: filename(file), x(0), y(0), mode('n'), status("NORMAL")
+: filename(file), x(0), y(0)
 {
-  lines.push_back("");
+  if (!std::filesystem::exists(filename)) {
+    std::cout << "Can't open this file" << std::endl;
+    exit(-1);
+  }
 
-  if (file.empty()) filename = "untitled";
-
+  line.push_back("");
+  
   initscr();
   noecho();
   cbreak();
@@ -19,82 +33,69 @@ Minivim::~Minivim()
   endwin();
 }
 
+void Minivim::cursor()
+{
+  int ch = getch();
+  
+  switch (ch)
+  {
+  case KEY_DOWN:
+    if (x == mx) break;
+    move(++x, y);
+    break;
+  
+  case KEY_UP:
+    if (x == 0) break;
+    move(--x, y);
+    break;
+
+  case KEY_LEFT:
+    // if (y == 0) break;
+    move(x, --y);
+    break;
+
+  case KEY_RIGHT:
+    // if (y == my) break;
+    move(x, ++y);
+    break;
+
+  case 'q':
+    flag_exit = 0;
+    break;
+  }
+}
+
+void Minivim::read_file()
+{
+  std::string tmp_l;
+  std::ifstream file(filename);
+  if (file.is_open() || filename != "")
+  {
+    while (getline(file, tmp_l))
+    {
+      line.push_back(tmp_l);
+    }
+  }
+}
+
+void Minivim::outputfile()
+{
+  for (size_t i = 1; i < line.size(); i++)
+  {
+    mvprintw(i-1, 0, line[i].c_str());
+  }
+
+  move(y, x);
+}
+
 void Minivim::run()
 {
-  while (mode != 'q')
+  read_file();
+  outputfile();
+
+  while (flag_exit)
   {
-    update();
-    statusline();
-
-    int c = getch();
-    input(c);
+    getmaxyx(stdscr, my, mx);
+    cursor();
   }
-}
-
-void Minivim::update()
-{
-  switch (mode)
-  {
-  case 'n':
-    status = "NORMAL";
-    break;
-  case 'i':
-    status = "INSERT";
-    break;
-  case 'q':
-    break;
-  }
-}
-
-void Minivim::statusline()
-{
-  attron(A_REVERSE);
-  mvprintw(LINES - 1, 0, status.c_str());
-  attroff(A_REVERSE);  
-}
-
-void Minivim::input(int c)
-{
-  switch (mode)
-  {
-  case 'n':
-    
-    switch (c)
-    {
-    case 'q':
-      mode = 'q';
-      break;
-    
-    case 'i':
-      mode = 'i';
-      break;
-    case 'w':
-      mode = 'w';
-      break;
-    }
-
-    break;
-  case 'i':
-    
-    switch (c)
-    {
-    case 27:
-      mode = 'n';
-      break;
-    
-    default:
-      std::string s(1, c);
-      lines.push_back(s);
-      break;
-    }
-
-    break;
-  }
-
-  for (size_t i {}; i < lines.size(); i++)
-  {
-    mvprintw(0, i, lines[0].c_str());
-  }
-  
-
 }

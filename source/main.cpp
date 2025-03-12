@@ -8,7 +8,7 @@ int main(int argc, char **argv)
     auto minivim = std::make_shared<Minivim>(argv[1]);
     minivim->run();
   } else {
-    auto minivim = std::make_shared<Minivim>("");
+    auto minivim = std::make_shared<Minivim>();
     minivim->run();
   }
   
