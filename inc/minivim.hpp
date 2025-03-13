@@ -26,8 +26,12 @@ private:
   bool flag_exit = 1;
   int x = 0, y = 0, my, mx;
 
-  void cursor();
+  bool cursor(int&);
+  
   void read_file();
   void outputfile();
+  void insert(int&);
+  bool purge(int&);
+  void save_buff();
 
 };

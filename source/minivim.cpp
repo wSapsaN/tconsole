@@ -20,7 +20,9 @@ Minivim::Minivim(const std::string& file)
   }
 
   line.push_back("");
+  // line.resize(100);
   
+
   initscr();
   noecho();
   cbreak();
@@ -33,36 +35,37 @@ Minivim::~Minivim()
   endwin();
 }
 
-void Minivim::cursor()
+
+bool Minivim::cursor(int &ch)
 {
-  int ch = getch();
-  
   switch (ch)
   {
   case KEY_DOWN:
-    if (x == mx) break;
+    if (x == mx) return 1;
     move(++x, y);
-    break;
+    return 1;
   
   case KEY_UP:
-    if (x == 0) break;
+    if (x == 0) return 1;
     move(--x, y);
-    break;
+    return 1;
 
   case KEY_LEFT:
-    // if (y == 0) break;
+    if (y == 0) return 1;
     move(x, --y);
-    break;
+    return 1;
 
   case KEY_RIGHT:
-    // if (y == my) break;
+    if (y == my) return 1;
     move(x, ++y);
-    break;
+    return 1;
 
   case 'q':
     flag_exit = 0;
-    break;
+    return 1;
   }
+
+  return 0;
 }
 
 void Minivim::read_file()
@@ -76,6 +79,56 @@ void Minivim::read_file()
       line.push_back(tmp_l);
     }
   }
+}
+
+void Minivim::insert(int &ch)
+{
+  std::string tmp;
+  for (size_t i = y; i < line[x+1].size(); i++)
+  {
+    tmp += line[x+1][i];
+  }
+  
+
+  line[x+1][y] = ch;
+  line.resize(line.size() + 1);
+
+  for (size_t i = 0, s = y; i < tmp.size(); i++, s++)
+  {
+    line[x+1][s+1] = tmp[i];
+  }
+  
+
+  mvprintw(x, y, &line[x+1][y]);
+  y++;
+  move(x,y);
+
+}
+
+bool Minivim::purge(int &ch)
+{
+  bool bs = ch == KEY_BACKSPACE;
+  if (bs && (y > 0 && y < my))
+  {
+    std::string tmp;
+    for (size_t i = y; i < line[x+1].size(); i++)
+    {
+      tmp += line[x+1][i];
+    }
+    
+    for (size_t i = 0, s = y; i < tmp.size(); i++, s++)
+    {
+      line[x+1][s-1] = tmp[i];
+    }
+
+    y--;
+    mvprintw(x, y, line[x+1].c_str());
+    move(x,y);
+
+    return 1;
+  } else if (bs) { return 1; }
+
+  return 0;
 }
 
 void Minivim::outputfile()
@@ -95,7 +148,12 @@ void Minivim::run()
 
   while (flag_exit)
   {
-    getmaxyx(stdscr, my, mx);
-    cursor();
+    getmaxyx(stdscr, mx, my);
+
+    int ch = getch();
+
+    if (cursor(ch) || purge(ch)) continue;
+    
+    insert(ch);
   }
 }
