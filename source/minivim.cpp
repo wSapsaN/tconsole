@@ -19,10 +19,6 @@ Minivim::Minivim(const std::string& file)
     exit(-1);
   }
 
-  line.push_back("");
-  // line.resize(100);
-  
-
   initscr();
   noecho();
   cbreak();
@@ -72,7 +68,7 @@ void Minivim::read_file()
 {
   std::string tmp_l;
   std::ifstream file(filename);
-  if (file.is_open() || filename != "")
+  if (file.is_open())
   {
     while (getline(file, tmp_l))
     {
@@ -84,22 +80,22 @@ void Minivim::read_file()
 void Minivim::insert(int &ch)
 {
   std::string tmp;
-  for (size_t i = y; i < line[x+1].size(); i++)
+  for (size_t i = y; i < line[x].size(); i++)
   {
-    tmp += line[x+1][i];
+    tmp += line[x][i];
   }
   
 
-  line[x+1][y] = ch;
+  line[x][y] = ch;
   line.resize(line.size() + 1);
 
   for (size_t i = 0, s = y; i < tmp.size(); i++, s++)
   {
-    line[x+1][s+1] = tmp[i];
+    line[x][s+1] = tmp[i];
   }
   
 
-  mvprintw(x, y, &line[x+1][y]);
+  mvprintw(x, y, &line[x][y]);
   y++;
   move(x,y);
 
@@ -111,18 +107,18 @@ bool Minivim::purge(int &ch)
   if (bs && (y > 0 && y < my))
   {
     std::string tmp;
-    for (size_t i = y; i < line[x+1].size(); i++)
+    for (size_t i = y; i < line[x].size(); i++)
     {
-      tmp += line[x+1][i];
+      tmp += line[x][i];
     }
     
     for (size_t i = 0, s = y; i < tmp.size(); i++, s++)
     {
-      line[x+1][s-1] = tmp[i];
+      line[x][s-1] = tmp[i];
     }
 
+    mvprintw(0, 0, line[x].c_str());
     y--;
-    mvprintw(x, y, line[x+1].c_str());
     move(x,y);
 
     return 1;
@@ -133,9 +129,9 @@ bool Minivim::purge(int &ch)
 
 void Minivim::outputfile()
 {
-  for (size_t i = 1; i < line.size(); i++)
+  for (size_t i = 0; i < line.size(); i++)
   {
-    mvprintw(i-1, 0, line[i].c_str());
+    mvprintw(i, 0, line[i].c_str());
   }
 
   move(y, x);
@@ -143,8 +139,11 @@ void Minivim::outputfile()
 
 void Minivim::run()
 {
-  read_file();
-  outputfile();
+  if (filename != "")
+  {
+    read_file();
+    outputfile();
+  }
 
   while (flag_exit)
   {
