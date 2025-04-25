@@ -24,14 +24,19 @@ private:
   std::vector<std::string> line;
 
   bool flag_exit = 1;
-  int x = 0, y = 0, my, mx;
+  short int x = 0, y = 0, my, mx;
 
   bool cursor(int&);
   
   void read_file();
   void outputfile();
+
   void insert(int&);
   bool purge(int&);
+
   void save_buff();
+
+  void create_space();
+  void resize_space();
 
 };
