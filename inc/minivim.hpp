@@ -39,6 +39,6 @@ private:
   void create_space();
   void resize_space();
 
-  void render_line();
+  // void render_line();
 
 };

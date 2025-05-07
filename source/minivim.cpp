@@ -121,29 +121,34 @@ bool Minivim::purge(int &ch)
   if (bs)
   {
 
-    std::string tmp;
-    tmp.resize(line[x].size() - 1);
-    // bool tail = 1;
+    std::string ltmp;
+    ltmp.resize(0);
+    if (line[x].size()) ltmp.resize(line[x].size() - 1);
 
     short int jump = 0;
-    for (size_t i = 0; i < line[x].size(); i++, jump++)
+    for (size_t i = 0; i < ltmp.size(); i++, jump++)
     {
-      /* if (jump == y && y != my) {
+      if (y == 0) break;
+      if (jump == y && y != my) {        
+        jump++;
+      }
 
-        
-        // jump++;
-      } // else if ((my-i) == 0) break;
-      */
-
-      tmp += line[x][jump];
+      ltmp[i] = line[x][jump];
     }
-
+        
     // mvprintw(mx, my - 10, "%s", tmp.c_str());
     // move(x, y);
-    line[x] = tmp;
+    if (!ltmp[0]) ltmp = "";
+    line[x] = ltmp;
 
-    // mvprintw(5, 0, "%s", line[x].c_str());
-    // move(x, y);
+    clear();
+    outputfile();
+
+    // mvprintw(5, 0, "line: %s", line[x].c_str());
+    // mvprintw(7, 0, "tmp: %s", ltmp.c_str());
+    // mvprintw(6, 0, "line: %ld", line[x].size());
+    // mvprintw(8, 0, "tmp: %ld", ltmp.size());
+    if (y) move(x, --y);
     
     return 1;
   }
@@ -187,15 +192,15 @@ void Minivim::resize_space() {
   }
 }
 
-void Minivim::render_line()
+/* void Minivim::render_line()
 {
-  clrtoeol();
+  // clrtoeol();
 
   mvprintw(x, 0, "%s", line[x].c_str());
   move(x, y);
 
   refresh();
-}
+} */
 
 void Minivim::run()
 {
@@ -239,22 +244,26 @@ void Minivim::run()
       w = mx, h = my;
     }
     
-    mvprintw(mx, 0, "%d - %d || %d - %d", x, y, mx, my);
+    mvprintw(mx, 0, "x %d - y %d || %d - %d", x, y, mx, my);
     
     refresh();
     move(x, y);
     
     int ch = getch();
 
-    if (cursor(ch) || purge(ch)) continue;
+    if (cursor(ch) || purge(ch)) {
+      // clear();
+      // outputfile();
+      continue;
+    }
 
     // if (cursor(ch)) continue;
     
     insert(ch);
 
-    render_line();
-    // clear();
-    // outputfile();
+    // render_line();
+    clear();
+    outputfile();
   }
 }
 
