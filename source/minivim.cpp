@@ -62,7 +62,7 @@ bool Minivim::cursor(int &ch)
 
   case KEY_RIGHT:
     state = 1;
-    if (y == (my-1) || line[x][y+1] == '\0' || line[x][y+1] == '~') {
+    if (y == (my-1) || line[x][y] == '\0' || line[x][y+1] == '~') {
       std::cout << "\a";
       break;
     }
@@ -101,11 +101,27 @@ void Minivim::insert(int &ch)
     return;
   }
   
+  if ((short int)line[x].size() > y)
+  {
+    std::string head, tail;
+
+    for (short int i = 0; i < y; i++) head += line[x][i];
+    for (short int i = y; i < (short int)line[x].size(); i++) tail += line[x][i];
+
+    head += ch;
+    head += tail;
+
+    line[x] = head;
+
+    move(x, ++y);
+
+    return;
+  }
+
   line[x].push_back(ch);
 
   move(x, ++y);
   return;
-
 }
 
 bool Minivim::purge(int &ch)
