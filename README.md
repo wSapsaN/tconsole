@@ -17,3 +17,4 @@ make
 - Navigating through text;
 - Insert;
 - Implementation of text cleaning (backspace);
+test
