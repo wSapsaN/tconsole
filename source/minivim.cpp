@@ -97,22 +97,40 @@ void Minivim::insert(int &ch)
   if (y == 0 && x == 0 && (line[x][y] == ' '))
   {
     line[x][y] = ch;
+
+    render_line();
     move(x, ++y);
+    
     return;
   }
   
   if ((short int)line[x].size() > y)
   {
-    std::string head, tail;
+    std::string head, tail, tmp;
 
     for (short int i = 0; i < y; i++) head += line[x][i];
     for (short int i = y; i < (short int)line[x].size(); i++) tail += line[x][i];
+
+    if ((line[x].size() + 1) > my) {
+      tmp = tail[tail.size()];
+      tail.pop_back();
+
+      if (x < mx && (line[x+1][0] == '~')) line.push_back(tmp);
+      if (x == mx && ((short int)line.size() > x))
+      {
+        line.push_back(tmp);
+        full_render(line.size()-(x-1));
+      }
+
+      // return code
+    }
 
     head += ch;
     head += tail;
 
     line[x] = head;
 
+    render_line();
     move(x, ++y);
 
     return;
@@ -120,7 +138,9 @@ void Minivim::insert(int &ch)
 
   line[x].push_back(ch);
 
+  render_line();
   move(x, ++y);
+
   return;
 }
 
@@ -132,9 +152,7 @@ bool Minivim::purge(int &ch)
   {
 
     std::string ltmp = "";
-    // ltmp.resize(0);
     if (line[x].size()) ltmp.resize(line[x].size() - 1);
-    // if (line[x].size()) ltmp.resize(my);
 
     short int jump = 0;
     for (size_t i = 0; i < ltmp.size(); i++, jump++)
@@ -156,11 +174,12 @@ bool Minivim::purge(int &ch)
   return 0;
 }
 
-void Minivim::outputfile()
+void Minivim::full_render(unsigned int start_postition = 0)
 {
-  for (short int i = 0; i < mx; i++)
+  clear();
+  for (short int i = (0 + start_postition), lconsole = 0; i < mx; i++, lconsole++)
   {
-    mvprintw(i, 0, "%s", line[i].c_str());
+    mvprintw(lconsole, 0, "%s", line[i].c_str());
   }
   
   move(x, y);
@@ -194,11 +213,10 @@ void Minivim::resize_space() {
 
 void Minivim::render_line()
 {
-  std::cout << "\r";
-  
-  mvprintw(0, 0, "                             ");
+  std::string trash;
+  for (short int i = 0; i < my; i++) trash += ' ';
 
-  line[x][y] = ' ';
+  mvprintw(x, 0, "%s", trash.c_str());
   mvprintw(x, 0, "%s", line[x].c_str());
   move(x, y);
 
@@ -216,7 +234,7 @@ void Minivim::run()
     read_file();
   } else create_space();
   
-  outputfile();
+  full_render();
   
   // w and h are needed to check the space
   short int w = mx, h = my;
@@ -230,14 +248,14 @@ void Minivim::run()
     if ((mx != w || my != h) && filename != "")
     {
       read_file();
-      outputfile();
+      full_render();
       w = mx, h = my;
       
       if (mx < x || my < y) move(mx, my);
     
     } else if (mx != w || my != h) {
       resize_space();
-      outputfile();
+      full_render();
 
       if (mx < x || my < y) {
         move(mx, my);
@@ -247,34 +265,22 @@ void Minivim::run()
       w = mx, h = my;
     }
     
-    mvprintw(mx, 0, "x %d - y %d || %d - %d\tsize: %ld", x, y, mx, my, line[x].size());
+    mvprintw(mx, 0, "x %d - y %d || %d - %d\tsize: %ld   ", x, y, mx, my, line[x].size());
     
     refresh();
     move(x, y);
     
     int ch = getch();
-
-    // cursor(ch);
-
     switch (ch)
     {
     case KEY_BACKSPACE:
       purge(ch);
-      // render_line();
-
-      clear();
-      outputfile();
+      render_line();
       break;    
     default:
       if (cursor(ch)) break;
       insert(ch);
-
-      clear();
-      outputfile();
       break;
     }
   }
 }
-
-
-

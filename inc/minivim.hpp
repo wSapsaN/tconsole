@@ -8,6 +8,10 @@
 #include <fstream>
 #include <iostream>
 
+#define ERROR_CODE   -1
+#define SUCCSSE_CODE  0
+#define TRANSFER_CODE 1
+
 class Minivim
 {
 public:
@@ -29,16 +33,16 @@ private:
   bool cursor(int&);
   
   void read_file();
-  void outputfile();
+  void full_render(unsigned int);
 
   void insert(int&);
   bool purge(int&);
 
-  void save_buff();
+  // TODO: 
+  // void save_buff();
 
   void create_space();
   void resize_space();
 
   void render_line();
-
 };

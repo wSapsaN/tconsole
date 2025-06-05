@@ -17,4 +17,9 @@ make
 - Navigating through text;
 - Insert;
 - Implementation of text cleaning (backspace);
-test
+
+### Third party dependencies used:
+
+- ncurses
+
+![alt text](photo/image.png)

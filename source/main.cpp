@@ -11,9 +11,6 @@ int main(int argc, char **argv)
     auto minivim = std::make_shared<Minivim>();
     minivim->run();
   }
-  
-
-
 
   return 0;
 }
