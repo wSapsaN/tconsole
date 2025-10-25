@@ -33,9 +33,9 @@ private:
   bool cursor(int&);
   
   void read_file();
-  void full_render(unsigned int);
+  void full_render(unsigned int start_postition = 0);
 
-  void insert(int&);
+  int  insert(int&);
   bool purge(int&);
 
   // TODO: 
@@ -43,6 +43,9 @@ private:
 
   void create_space();
   void resize_space();
+
+  void enter_event();
+  void backspace_event(int);
 
   void render_line();
 };
