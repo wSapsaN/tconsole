@@ -1,34 +1,27 @@
 #include "minivim.hpp"
 
-void Minivim::downkey()
-{
+void Minivim::downkey() {
   if (x != mx && line[x+1][0] != '~') {
-    int len_str = line[x+1].length();
-    if (!len_str) y = 0;
-    if (len_str && len_str < y)
-    {
-      y = line[x+1].length();
+    int len_str = strlen(line[x+1].c_str());
+    if (!len_str) {
+      y = 0;
+    } else if (len_str < y) {
+      y = len_str;
     }
     
     move(++x, y);
   }
 }
 
-void Minivim::upkey()
-{
-  if (x)
-  {
-    int len_str = line[x-1].length();
-    
-    if (!len_str)
-    {
-      y = 0;
+void Minivim::upkey() {
+  if (x) {
+    int len_str = strlen(line[x-1].c_str());
+    if (len_str) {
+      if (len_str < y) y = len_str;
     } else {
-      if (len_str < y)
-      {
-        y = len_str;
-      }
+      y = 0;
     }
+
     move(--x, y);
   }
 }
@@ -150,14 +143,22 @@ bool Minivim::purge(int &ch)
 
     return 1;
   } else if (x && !y) {
-    x--;
-    y = my-1;
-
-    move(x, y);
+    if (x != mx)
+    {
+      if (line[x+1][y] == '~' || x < mx) {
+        line[x][0] = '~';
+        render_line();
+      }
+    }
     
+    x--;
+    y = strlen(line[x].c_str());
+    
+    move(x, y);
+
     line[x][y] = '\0';
     clrtoeol();
-
+    
     return 1;
   }
   
@@ -177,7 +178,7 @@ void Minivim::full_render(unsigned int start_postition)
 
 void Minivim::create_space() {
   getmaxyx(stdscr, mx, my);
-  mx--; my--;
+  my--;
 
   line.resize(mx);
   for (short i = 0; i < mx; i++) {
@@ -205,10 +206,14 @@ void Minivim::resize_space() {
 
 void Minivim::enter_event()
 {
+  if (x >= (mx-1)) return;
   y = 0;
-  line[++x].pop_back();
-  line[x].push_back('\0');
+  ++x;
+  
+  line[x][y] = '\0';
+
   render_line();
+  clrtoeol();
 }
 
 void Minivim::render_line()
@@ -306,9 +311,15 @@ void Minivim::run()
     case KEY_BACKSPACE:
       backspace_event(ch);
       break;
-    // case '\n':
-    //   enter_event();
-    //   break;
+    case '\n':
+      enter_event();
+      break;
+    case KEY_DOWN:
+      downkey();
+      break;
+    case KEY_UP:
+      upkey();
+      break;
     // case '\t':
     //   tab_event();
     //   break;
