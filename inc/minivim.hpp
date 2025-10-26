@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 #define ERROR_CODE   -1
 #define SUCCSSE_CODE  0
@@ -24,7 +25,7 @@ public:
 protected:
   std::string filename;
 
-private:
+// private:
   std::vector<std::string> line;
 
   bool flag_exit = 1;
@@ -48,4 +49,11 @@ private:
   void backspace_event(int);
 
   void render_line();
+
+
+public:
+  void downkey();
+  void upkey();
+
+  void tab_event();
 };
