@@ -108,6 +108,28 @@ int Minivim::insert(int &ch)
 {
   if (y >= my) return 0;
   
+  if (line[x][y]) {
+    std::string tail = "";
+
+    int len = strlen(line[x].c_str());
+    for (int i = y, count = 0; i < len; i++, count++) {
+      tail += line[x][y+count];
+    }
+
+    line[x][y] = ch;
+    move(x, y++);
+    
+    for (int i = y, count = 0; i < len+1; i++, count++) {
+      line[x][y+count] = tail[count];
+    }
+    
+    clrtoeol();
+
+    render_line();
+
+    return SUCCSSE_CODE;
+  }
+
   if (y == my-1)
   {
     x++;
@@ -135,6 +157,31 @@ bool Minivim::purge(int &ch)
 {
   if (ch == KEY_BACKSPACE && y)
   {
+    if (line[x][y])
+    {
+      std::string tail = "";
+
+      int len = strlen(line[x].c_str());
+      for (int i = y, count = 0; i < len; i++, count++) {
+        tail += line[x][y+count];
+      }
+
+      line[x][len-1] = '\0';
+
+      int count = 0;
+      for (int i = y; i < len; i++) {
+        line[x][(y-1)+count] = tail[count];
+        count++;
+      }
+
+      move(x, y);
+      clrtoeol();
+
+      y--;
+
+      return 1;
+    }
+    
     y--;
     move(x, y);
     line[x][y] = '\0';
@@ -165,12 +212,16 @@ bool Minivim::purge(int &ch)
   return 0;
 }
 
-void Minivim::full_render(unsigned int start_postition)
-{
+void Minivim::full_render(unsigned int start_postition) {
+  
   clear();
-  for (short int i = (0 + start_postition), lconsole = 0; i < mx; i++, lconsole++)
-  {
+  for (short int i = (0 + start_postition), lconsole = 0; i < mx; i++, lconsole++) {
     mvprintw(lconsole, 0, "%s", line[i].c_str());
+    // if (line[i][0] != ' ' || !line[i][0])
+    // {
+    //   line[i][0] = '~';
+    // }
+    
   }
   
   move(x, y);
@@ -204,8 +255,63 @@ void Minivim::resize_space() {
   }
 }
 
-void Minivim::enter_event()
-{
+void Minivim::enter_event() {
+
+  if (line[x+1].c_str() && line[x+1][0] != '~') {
+    std::vector<std::string> tail;
+    tail.resize(line.size());
+    
+    int count = 1;
+    for (size_t i = x; i < line.size(); i++) {
+      if (line[x+count][0] == '~') break;
+
+      tail[count] = line[x + count];
+      line[x + count] = '\0';
+
+      count++;
+    }
+    
+    x++;
+    y = 0;
+
+    count = 1;
+    for (short i = x+5; i < mx; i++) {
+      // line[x + count] = '\0';
+      
+      line[x + count] = tail[count];
+      line[x] = "                      ";
+      
+      // mvprintw(x+1, 0,"%s", tail[count].c_str());
+      // move(x,0);
+      // mvprintw
+      // clrtobot();
+
+      mvprintw(x, 0, "%s", line[x].c_str());
+      mvprintw(x+count, 0, "%s", tail[count].c_str());
+
+      count++;
+    }
+
+    // count = 1;
+    // for (size_t i = 20; i < 25; i++)
+    // {
+    //   mvprintw(i, 0, "TAIL: %s", tail[count++].c_str());
+    // }
+        
+
+
+    // mvprintw(10, 20, "bASE: %s", line[x].c_str());
+    
+    // line[x+1] = '\0';
+    // line[x+1] = tail[1];
+
+    move(x, y);
+
+    // full_render();
+    
+    return;
+  }
+  
   if (x >= (mx-1)) return;
   y = 0;
   ++x;
@@ -214,6 +320,8 @@ void Minivim::enter_event()
 
   render_line();
   clrtoeol();
+
+  return;
 }
 
 void Minivim::render_line()
@@ -231,22 +339,17 @@ void Minivim::backspace_event(int ch)
 
 void Minivim::tab_event()
 {
-  int tab_step = 1;
-  for (int i = 0; i < tab_step; i++)
-  {
-    // if ((line[x].length() - 4) <= static_cast<size_t>(my))
-    // {
-    //   line[x][y+i] = 's';
-    // }
-
-    line[x][y+i] = ' ';
+  int tab_step = 4;
+  for (int i = 0; i < tab_step; i++) {
+    if (y <= (my-10)) {
+      line[x][y+i] = ' ';
+    } else {
+      return;
+    }
   }
-  y+=tab_step;
-  line[x][y] = '\0';
 
-  // mvprintw(10, 0, "%ld", line[x].length());
-  mvprintw(11, 0, "%s", line[x].c_str());
-  mvprintw(10, 0, "%ld", line[x].size());
+  y += tab_step;
+  line[x][y] = '\0';
   
   render_line();
 }
@@ -320,9 +423,9 @@ void Minivim::run()
     case KEY_UP:
       upkey();
       break;
-    // case '\t':
-    //   tab_event();
-    //   break;
+    case '\t':
+      tab_event();
+      break;
     default:
       if (cursor(ch)) break;
       insert(ch);
